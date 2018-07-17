@@ -17,34 +17,34 @@ print(df3)
 
 def curiosity_scale_average():
     joyous_ex = 0
-    joyous_ex_average = 0.0
+    joyous_ex_partner = 0
     deprivation_sens = 0
-    deprivation_sens_average = 0.0
+    deprivation_sens_partner = 0
     stress_tol = 0
-    stress_tol_average = 0.0
+    stress_tol_partner = 0
     social_cur = 0
-    social_cur_average = 0.0
+    social_cur_partner = 0
     thrill_seek = 0
-    thrill_seek_average = 0.0
+    thrill_seek_partner = 0
     count = 0
 
-    print(df1.columns)
     for j in range(2, len(df1)):
         for i in range(6, (len(df1.columns)-6)//2, 5):
             # self
-            df2['joyous_ex_self'][i] += int(df1.iloc[j, i])
-            df2['deprivation_sens_ self'][i] += int(df1.iloc[j, i+1])
-            df2['stress_tol_self'][i] += int(df1.iloc[j, i+2])
-            df2['social_cur_self'][i] += int(df1.iloc[j, i+3])
-            df2['thrill_seek_self'][i] += int(df1.iloc[j, i+4])
+            joyous_ex += int(df1.iloc[j, i])
+            deprivation_sens += int(df1.iloc[j, i+1])
+            stress_tol += int(df1.iloc[j, i+2])
+            social_cur += int(df1.iloc[j, i+3])
+            thrill_seek += int(df1.iloc[j, i+4])
             count += 1
         for i in range((len(df1.columns) - 6) // 2 + 6, len(df1.columns), 5):
             # partner
-            df2['joyous_ex_partner'][i] += int(df1.iloc[j, i])
-            df2['deprivation_sens_partner'][i] += int(df1.iloc[j, i+1])
-            df2['stress_tol_partner'][i] += int(df1.iloc[j, i+2])
-            df2['social_cur_partner'][i] += int(df1.iloc[j, i+3])
-            df2['thrill_seek_partner'][i] += int(df1.iloc[j, i+4])
+            joyous_ex_partner += int(df1.iloc[j, i])
+            deprivation_sens_partner += int(df1.iloc[j, i + 1])
+            stress_tol_partner += int(df1.iloc[j, i + 2])
+            social_cur_partner += int(df1.iloc[j, i + 3])
+            thrill_seek_partner += int(df1.iloc[j, i + 4])
+        df3['joyous_ex_self', ]
 
     joyous_ex_average = joyous_ex / count
     deprivation_sens_average = deprivation_sens / count
