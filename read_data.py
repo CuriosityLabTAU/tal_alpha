@@ -45,7 +45,7 @@ def curiosity_scale_average():
             social_cur_partner += int(df1.iloc[j, i + 3])
             thrill_seek_partner += int(df1.iloc[j, i + 4])
         df3['joyous_ex_self', ]
-
+#
     joyous_ex_average = joyous_ex / count
     deprivation_sens_average = deprivation_sens / count
     stress_tol_average = stress_tol / count
