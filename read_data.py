@@ -1,44 +1,63 @@
 import pandas as pd
-import string
+import numpy as np
 
-df = pd.read_csv('TalDF2.csv')
+df = pd.read_csv('TalDF.csv')
 df1 = df[[df.columns[8]]+ df.columns[17:].tolist()]
+df1 = df1.drop(df.index[[0, 1]])
+df1 = df1.reset_index(drop = True)
 df1 = df1.rename(columns= {'Q1':'User1', 'Q2':'User2','Q3': 'Gender', 'Q4': 'Age', 'Q5' : 'Education'})
 df1.to_csv('clear_dataframe.csv')
-print (df1)
-print(df1.columns)
-#Gender = pd.Series(df1['Gender'])
-#for i in range(len(Gender)):
-#    try:
-#        if int(Gender[i].strip()) == 1:
-#            Gender[i] = 'Female'
-#        elif int(Gender[i].strip()) == 2:
-#            Gender[i] = 'male'
-#        elif int(Gender[i].strip()) ==3:
-#            Gender[i] = 'other'
-#    except:
-#        pass
-#
-#df1['Gender'] = Gender
-#print df1['Gender']
-#Q1Answers = pd.Series(df1['Q4_1'])
-#print Q1Answers
-#GenderToQ1 = pd.DataFrame(data = 0, index = ('Female', 'Male', 'Other'), columns= range(1,6))
-#for i in range(11):
-#    try:
-#        if df1['Gender'][i] == 'Male':
-#            GenderToQ1['Male'][int(Q1Answers[i].strip())] += 1
-#        elif df1['Gender'][i] == 'Female':
-#            GenderToQ1['Female'][int(Q1Answers[i].strip())] += 1
-#        elif df1['Gender'][i] == 'Other':
-#            GenderToQ1['Other'][int(Q1Answers[i].strip())] += 1
-#    except:
-#        pass
-#print GenderToQ1
+df2 = pd.DataFrame(np.zeros([len(df1), 10]), columns=['joyous_ex_self', 'deprivation_sens_self', 'stress_tol_self',
+                                                    'social_cur_self', 'thrill_seek_self','joyous_ex_partner',
+                                                    'deprivation_sens_partner', 'stress_tol_partner',
+                                                    'social_cur_partner', 'thrill_seek_partner'])
+df3 = df1.append(df2)
+print(df3)
 
-UserDiffernce = pd.DataFrame(data = 0, index= range(1,6), columns = ('User1', 'User2'))
-print UserDiffernce
-for i in range(1, len(UserDiffernce)):
-    UserDiffernce['User2'][i]=df1.loc[df1.User1 == i, 'Q7_1']
-    UserDiffernce['User1'][i]=df1.loc[df1.User1 == df1.loc[df1.User1 == i, 'User2'], 'Q6_1']
 
+def curiosity_scale_average():
+    joyous_ex = 0
+    joyous_ex_average = 0.0
+    deprivation_sens = 0
+    deprivation_sens_average = 0.0
+    stress_tol = 0
+    stress_tol_average = 0.0
+    social_cur = 0
+    social_cur_average = 0.0
+    thrill_seek = 0
+    thrill_seek_average = 0.0
+    count = 0
+
+    print(df1.columns)
+    for j in range(2, len(df1)):
+        for i in range(6, (len(df1.columns)-6)//2, 5):
+            # self
+            df2['joyous_ex_self'][i] += int(df1.iloc[j, i])
+            df2['deprivation_sens_ self'][i] += int(df1.iloc[j, i+1])
+            df2['stress_tol_self'][i] += int(df1.iloc[j, i+2])
+            df2['social_cur_self'][i] += int(df1.iloc[j, i+3])
+            df2['thrill_seek_self'][i] += int(df1.iloc[j, i+4])
+            count += 1
+        for i in range((len(df1.columns) - 6) // 2 + 6, len(df1.columns), 5):
+            # partner
+            df2['joyous_ex_partner'][i] += int(df1.iloc[j, i])
+            df2['deprivation_sens_partner'][i] += int(df1.iloc[j, i+1])
+            df2['stress_tol_partner'][i] += int(df1.iloc[j, i+2])
+            df2['social_cur_partner'][i] += int(df1.iloc[j, i+3])
+            df2['thrill_seek_partner'][i] += int(df1.iloc[j, i+4])
+
+    joyous_ex_average = joyous_ex / count
+    deprivation_sens_average = deprivation_sens / count
+    stress_tol_average = stress_tol / count
+    social_cur_average = social_cur / count
+    thrill_seek_average = thrill_seek / count
+
+    print(joyous_ex_average)
+    print(deprivation_sens_average)
+    print(stress_tol_average)
+    print(social_cur_average)
+    print(thrill_seek_average)
+curiosity_scale_average()
+
+from IPython import embed
+embed()
