@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 df = pd.read_csv('social_curiosity_6users.csv')
 df1 = df[df.columns[17:].tolist()]
@@ -12,6 +14,8 @@ df2 = pd.DataFrame(np.zeros([len(df1), 15]), columns=['joyous_ex_self', 'depriva
                                                     'social_cur_partner', 'thrill_seek_partner',
                                                       'joyous_ex_reflection','deprivation_sens_reflection', 'stress_tol_reflection',
                                                     'social_cur_reflection', 'thrill_seek_reflection'])
+
+
 
 df3 = pd.concat([df1, df2], axis=1)
 for i in df3:
@@ -36,11 +40,10 @@ averages = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
 for i in range(len(df3.columns)):
     averages[i] = np.mean(df3.iloc[:, i])
 
-df4 = df3[df.columns[:6].tolist()].append(df3[df.columns[60:].tolist()])
 df3.to_csv('clear_data_frame.csv')
 df1.to_csv('df1_data_frame')
 print (df3)
-
+pd.df3.plot
 
 
 from IPython import embed
