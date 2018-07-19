@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import ttest_1samp
 
 
-df = pd.read_csv('social_curiosity_6users.csv')
+df = pd.read_csv('socialcuriosity_10.csv')
 df1 = df[df.columns[17:].tolist()]
 df1 = df1.drop(df.index[[0, 1]])
 df1 = df1.reset_index(drop = True)
@@ -34,19 +35,29 @@ for ind in df3.index:
     temp = df3[df3.User2 == df3.loc[ind, 'User1']].iloc[:, -10:-5]
     df3.iloc[ind, -5:] = np.asarray(temp)
 
-df3.drop(['joyous_ex_partner', 'deprivation_sens_partner', 'stress_tol_partner', 'social_cur_partner', 'thrill_seek_partner'], axis=1)
+df3 = df3.drop(['joyous_ex_partner', 'deprivation_sens_partner', 'stress_tol_partner', 'social_cur_partner', 'thrill_seek_partner'], axis=1)
 averages = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
-for i in range(len(df3.columns)):
-    averages[i] = np.mean(df3.iloc[:, i])
+stds = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
+
+# for i in range(len(df3.columns)):
+#     averages[i] = np.mean(df3.iloc[:, i])
+#     stds[i] = np.std(df3.iloc[:, i])
+
+averages = df3.mean()
+stds = df3.std()
+stds = stds[-10:]
+stds = [stds[:5], stds[5:]]
+
 array_two = [0,1]
 df3.to_csv('clear_data_frame.csv')
 df1.to_csv('df1_data_frame')
-print (df3)
+# print (df3)
 
-
+curious_index_names = ['joyous_ex', 'deprivation_sens', 'stress_tol', 'social_cur', 'thrill_seek']
 comparison = pd.DataFrame({'self': list(averages[55:60]),
-                               'partner': list(averages[60:65])},
-                              index=['joyous_ex', 'deprivation_sens', 'stress_tol', 'social_cur', 'thrill_seek'])
+                               'reflection': list(averages[60:65])},
+                              index=curious_index_names)
+comparison1 = df3.iloc[:,55:]
 
 def graph_individual():
 
@@ -63,20 +74,31 @@ def graph_individual():
     thri_ax.set_title('thrill_seek')
 
 def graph_type():
-    comp_ax = comparison.plot.bar()
+    comp_ax = comparison.plot.bar(yerr = stds)
     comp_ax.set_title('all_types')
 
 def graph_all():
     all_ax = np.mean(comparison).plot.bar()
     all_ax.set_title('combined')
 
+def graph_difference():
+    for c in curious_index_names:
+        print(c)
+        temp = df3.iloc[:, df3.columns.str.contains(c)].diff(axis=1).abs().iloc[:, -1]
+        df3[c + '_diff'] = temp
+    differnce_cindex = df3.iloc[:,-5:]
+    # differnce_cindex.mean(axis=0).plot.bar(yerr=differnce_cindex.std(axis=0))
+    differnce_cindex.boxplot()
+    print(ttest_1samp(differnce_cindex, 0, axis=0))
 
-#graph_type()
+
 #graph_individual()
+graph_type()
 #graph_all()
+#graph_difference()
 plt.show()
 
 
 
-from IPython import embed
-embed()
+# from IPython import embed
+# embed()
