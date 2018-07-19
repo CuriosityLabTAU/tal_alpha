@@ -74,7 +74,8 @@ def graph_individual():
     thri_ax.set_title('thrill_seek')
 
 def graph_type():
-    comp_ax = comparison.plot.bar(yerr = stds)
+    fig, ax = plt.subplots(1,1)
+    comp_ax = comparison.plot(kind = 'bar', yerr = stds, ax =ax)
     comp_ax.set_title('all_types')
 
 def graph_all():
@@ -87,15 +88,17 @@ def graph_difference():
         temp = df3.iloc[:, df3.columns.str.contains(c)].diff(axis=1).abs().iloc[:, -1]
         df3[c + '_diff'] = temp
     differnce_cindex = df3.iloc[:,-5:]
-    # differnce_cindex.mean(axis=0).plot.bar(yerr=differnce_cindex.std(axis=0))
-    differnce_cindex.boxplot()
+
+    fig, ax = plt.subplots(1,1)
+    differnce_cindex.mean(axis=0).plot(kind= 'bar', yerr=differnce_cindex.std(axis=0), ax = ax)
+    # differnce_cindex.boxplot()
     print(ttest_1samp(differnce_cindex, 0, axis=0))
 
 
-#graph_individual()
-graph_type()
+graph_individual()
+# graph_type()
 #graph_all()
-#graph_difference()
+graph_difference()
 plt.show()
 
 
