@@ -2,9 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_1samp
+import seaborn as sns
 
 
-df = pd.read_csv('socialcuriosity_10.csv')
+
+df = pd.read_csv('socialcuriosity_12.csv')
 df1 = df[df.columns[17:].tolist()]
 df1 = df1.drop(df.index[[0, 1]])
 df1 = df1.reset_index(drop = True)
@@ -36,6 +38,7 @@ for ind in df3.index:
     df3.iloc[ind, -5:] = np.asarray(temp)
 
 df3 = df3.drop(['joyous_ex_partner', 'deprivation_sens_partner', 'stress_tol_partner', 'social_cur_partner', 'thrill_seek_partner'], axis=1)
+df3 = df3.drop(df3[(df3.User1 == 1001) | (df3.User1 == 1002)].index, axis=0)
 averages = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
 stds = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
 
@@ -59,6 +62,7 @@ comparison = pd.DataFrame({'self': list(averages[55:60]),
                               index=curious_index_names)
 comparison1 = df3.iloc[:,55:]
 
+
 def graph_individual():
 
     joyous_ax = df3[df3.columns[df3.columns.str.contains('joyous_ex')][array_two]].plot.bar()
@@ -75,7 +79,10 @@ def graph_individual():
 
 def graph_type():
     fig, ax = plt.subplots(1,1)
-    comp_ax = comparison.plot(kind = 'bar', yerr = stds, ax =ax)
+    comparison2 = comparison/comparison.max()
+    comparison2 = pd.DataFrame(comparison2.mean(axis=1), columns = ['mean'])
+    # comp_ax = comparison.plot(kind = 'bar', yerr = stds, ax =ax)
+    comp_ax = comparison2.plot(kind = 'bar', ax =ax)
     comp_ax.set_title('all_types')
 
 def graph_all():
@@ -84,22 +91,63 @@ def graph_all():
 
 def graph_difference():
     for c in curious_index_names:
-        print(c)
         temp = df3.iloc[:, df3.columns.str.contains(c)].diff(axis=1).abs().iloc[:, -1]
         df3[c + '_diff'] = temp
     differnce_cindex = df3.iloc[:,-5:]
 
     fig, ax = plt.subplots(1,1)
+    differnce_cindex /= differnce_cindex.max()
     differnce_cindex.mean(axis=0).plot(kind= 'bar', yerr=differnce_cindex.std(axis=0), ax = ax)
     # differnce_cindex.boxplot()
+    print('5DC t-test')
     print(ttest_1samp(differnce_cindex, 0, axis=0))
 
+    a = df3.iloc[:, df3.columns.str.contains('6_')]
+    b = df3.iloc[:, df3.columns.str.contains('7_')]
+    d = np.array(a) - np.array(b)
+    difference_df = pd.DataFrame(data = np.abs(d), columns = df3.iloc[:, df3.columns.str.contains('6_')].columns)
+    difference_array = pd.Series(np.zeros(len(difference_df.columns)), index = [difference_df.columns])
+    for i in range(len(difference_array)):
+        difference_array[i] = np.mean(difference_df.iloc[:, i])
 
-graph_individual()
-# graph_type()
-#graph_all()
-graph_difference()
+    fig, ax1 = plt.subplots(1, 1)
+    difference_df /= difference_df.max()
+    difference_df.mean(axis=0).plot(kind= 'bar', yerr=difference_df.std(axis=0), ax = ax1)
+    ax1.set_title('n = ' + str(difference_df.shape[0]))
+    print('All questions t-test')
+    print(ttest_1samp(difference_df, 0, axis=0))
+
+
+
+#graph_individual()
+graph_type()
+# graph_all()
+# graph_difference()
+
+
+json_df_last = pd.read_csv('json_df_last', index_col=0)
+
+
+curious_index_names_self = []
+curious_index_names_reflection = []
+for n in curious_index_names:
+    curious_index_names_self.append(curious_index_names[i] + '_self')
+    curious_index_names_self.append(curious_index_names[i] + '_reflection')
+
+possible = []
+score = []
+for i in range(7):
+    possible.append('possible_' + str(i))
+    score.append('score_' + str(i))
+df_columns = ['user']
+df_columns.append(curious_index_names_self + curious_index_names_reflection + score + possible)
+
+#Combined_df = pd.DataFrame(np.zeros(len(df3), 25), columns=['user' + curious_index_names_self + curious_index_names_reflection])
+
+
 plt.show()
+
+
 
 
 
