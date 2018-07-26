@@ -6,7 +6,7 @@ import seaborn as sns
 
 
 
-df = pd.read_csv('socialcuriosity_12.csv')
+df = pd.read_csv('socialcuriosity_13.csv')
 df1 = df[df.columns[17:].tolist()]
 df1 = df1.drop(df.index[[0, 1]])
 df1 = df1.reset_index(drop = True)
@@ -110,39 +110,86 @@ def graph_difference():
     for i in range(len(difference_array)):
         difference_array[i] = np.mean(difference_df.iloc[:, i])
 
+    ax.set_xlabel('Dimension')
+    ax.set_ylabel('Difference')
+    ax.set_xticklabels(curious_index_names, rotation=0)
+
     fig, ax1 = plt.subplots(1, 1)
     difference_df /= difference_df.max()
     difference_df.mean(axis=0).plot(kind= 'bar', yerr=difference_df.std(axis=0), ax = ax1)
     ax1.set_title('n = ' + str(difference_df.shape[0]))
+    ax1.set_xlabel('Question')
+    ax1.set_ylabel('Difference')
     print('All questions t-test')
     print(ttest_1samp(difference_df, 0, axis=0))
 
 
 
 #graph_individual()
-graph_type()
+# graph_type()
 # graph_all()
-# graph_difference()
+graph_difference()
 
 
 json_df_last = pd.read_csv('json_df_last', index_col=0)
+
+json_df_last1 = json_df_last.copy()
+json_df_last1.user = json_df_last1.user + 1
+json_combined = pd.concat([json_df_last, json_df_last1], axis = 0)
 
 
 curious_index_names_self = []
 curious_index_names_reflection = []
 for n in curious_index_names:
-    curious_index_names_self.append(curious_index_names[i] + '_self')
-    curious_index_names_self.append(curious_index_names[i] + '_reflection')
+    curious_index_names_self.append(n + '_self')
+    curious_index_names_self.append(n + '_reflection')
 
 possible = []
 score = []
 for i in range(7):
-    possible.append('possible_' + str(i))
-    score.append('score_' + str(i))
+    possible.append('possible_' + str(i + 1))
+    score.append('score_' + str(i + 1))
 df_columns = ['user']
-df_columns.append(curious_index_names_self + curious_index_names_reflection + score + possible)
+df_columns = df_columns + curious_index_names_self + curious_index_names_reflection + score + possible
 
-#Combined_df = pd.DataFrame(np.zeros(len(df3), 25), columns=['user' + curious_index_names_self + curious_index_names_reflection])
+combined_df = pd.DataFrame(data = np.zeros([len(df3), 25]), columns=[df_columns])
+combined_df = combined_df.reset_index(drop=True)
+for i in range(10):
+    combined_df.iloc[:, i + 1] = list(df3.iloc[:, i - 10])
+
+for i in range(len(combined_df)):
+    combined_df.iloc[i,0] = 1003. + i
+
+lvls = json_combined['level'].unique()
+usrs = json_combined['user'].unique()
+data = df3.copy()
+
+for l in lvls:
+   c = 'possible_'+str(int(l))
+   data[c] = 0
+
+for u in usrs:
+    for l in lvls:
+        c = 'possible_' + str(int(l))
+        data.loc[data.User1 == u, c] = np.float(json_combined.loc[((json_combined.user == u) & (json_combined.level == l)), 'possible'])
+
+
+data.to_csv('df_all')
+data = data.drop((data.columns[data.columns.str.contains('Q6_')]) | (data.columns[data.columns.str.contains('Q7_')]), axis=1)
+data.to_csv('df_filtered')
+
+for i in range(len(json_df_last)):
+    t = (combined_df['user'] == json_df_last['user'][i])
+    combined_df.loc[[s for s, x in enumerate(t) if x][0]:,
+    'possible_' + str(int(json_df_last['level'][i]))] = json_df_last['possible'][i]
+
+#        json_df_last[]
+#        elif json_df_last['level'] == 6:
+#        elif json_df_last['level'] == 5:
+#        elif json_df_last['level'] == 4:
+#        elif json_df_last['level'] == 3:
+#        elif json_df_last['level'] == 2:
+#        elif json_df_last['level'] == 1:
 
 
 plt.show()

@@ -49,10 +49,12 @@ def main():
         else:
             df_json = jsonread(file)
     json_df_last = df_json.sort_values(by=['user'])
-    json_df_last = json_df_last.reset_index()
+    json_df_last = json_df_last.reset_index(drop = True)
 
     json_df_last[['possible', 'score']] /= json_df_last[['possible', 'score']].max().max() # normaliztion
 
+    json_df_last = json_df_last.drop(json_df_last.index[range(7)])
+    json_df_last = json_df_last.reset_index(drop = True)
     json_df_last.to_csv('json_df_last')
 
     fig, ax = plt.subplots(1,1)
@@ -62,8 +64,7 @@ def main():
     fig, ax = plt.subplots(1,1)
     sns.barplot(x='level', y='score', data=json_df_last)
 
-
-    json_df_last = json_df_last.drop(json_df_last.loc[json_df_last.user == '1001',:].index, axis=0)
+    print json_df_last
     print('possible t-test:',ttest_ind(json_df_last[json_df_last['level'] == 1.]['possible'], json_df_last[json_df_last['level'] == 2.]['possible'], axis=0))
     print('score t-test:',ttest_ind(json_df_last[json_df_last['level'] == 1.]['score'], json_df_last[json_df_last['level'] == 2.]['score'], axis=0))
 
