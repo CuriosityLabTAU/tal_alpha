@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import collections
 import seaborn as sns
-import glob, os
+import os
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 
@@ -42,8 +42,7 @@ def jsonread(data):
     return json_df
 
 def main():
-    # os.chdir("/mydir")
-    for file in glob.glob("*.log"):
+    for file in os.listdir(os.getcwd() + '/data/json_files'):
         if 'df_json' in locals():
             df_json = pd.concat([df_json, jsonread(file)], axis=0)
         else:

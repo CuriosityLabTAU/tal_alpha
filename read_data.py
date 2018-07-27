@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_1samp
 import seaborn as sns
+import os
 
 
-
-df = pd.read_csv('socialcuriosity_13.csv')
+fname = 'socialcuriosity_13.csv'
+df = pd.read_csv(os.getcwd() +'/data/' + fname)
 df1 = df[df.columns[17:].tolist()]
 df1 = df1.drop(df.index[[0, 1]])
 df1 = df1.reset_index(drop = True)
