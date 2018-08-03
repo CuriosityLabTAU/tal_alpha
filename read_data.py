@@ -6,66 +6,67 @@ import seaborn as sns
 import os
 
 
-fname = 'socialcuriosity_13.csv'
-df = pd.read_csv(os.getcwd() +'/data/' + fname)
-df1 = df[df.columns[17:].tolist()]
-df1 = df1.drop(df.index[[0, 1]])
-df1 = df1.reset_index(drop = True)
-df1 = df1.rename(columns= {'Q1': 'User1', 'Q2': 'User2','Q3': 'Gender', 'Q4': 'Age', 'Q5': 'Education'})
-df2 = pd.DataFrame(np.zeros([len(df1), 15]), columns=['joyous_ex_self', 'deprivation_sens_self', 'stress_tol_self',
-                                                    'social_cur_self', 'thrill_seek_self', 'joyous_ex_partner',
-                                                    'deprivation_sens_partner', 'stress_tol_partner',
-                                                    'social_cur_partner', 'thrill_seek_partner',
-                                                      'joyous_ex_reflection','deprivation_sens_reflection', 'stress_tol_reflection',
-                                                    'social_cur_reflection', 'thrill_seek_reflection'])
+def read_raw_dat(df, curious_index_names ):
+    '''
+    reading and reformatting the data from qualtrics.
+    :param df: data frame from the raw data from qualtrics
+    :return: df1, df2, df3, comparison, comparison1, averages, stds
+    '''
+    df1 = df[df.columns[17:].tolist()]
+    df1 = df1.drop(df.index[[0, 1]])
+    df1 = df1.reset_index(drop = True)
+    df1 = df1.rename(columns= {'Q1': 'User1', 'Q2': 'User2','Q3': 'Gender', 'Q4': 'Age', 'Q5': 'Education'})
+    df2 = pd.DataFrame(np.zeros([len(df1), 15]), columns=['joyous_ex_self', 'deprivation_sens_self', 'stress_tol_self',
+                                                        'social_cur_self', 'thrill_seek_self', 'joyous_ex_partner',
+                                                        'deprivation_sens_partner', 'stress_tol_partner',
+                                                        'social_cur_partner', 'thrill_seek_partner',
+                                                          'joyous_ex_reflection','deprivation_sens_reflection', 'stress_tol_reflection',
+                                                        'social_cur_reflection', 'thrill_seek_reflection'])
+
+    df3 = pd.concat([df1, df2], axis=1)
+    for i in df3:
+        df3[i] = np.array(df3[i], dtype=float)
+    fivejump = np.arange(0, 25, 5)
+    for i in range(5):
+        self_array = np.mean(df3[df3.columns[df3.columns.str.contains('Q6_')][fivejump + i]], axis=1)
+        partner_array = np.mean(df3[df3.columns[df3.columns.str.contains('Q7_')][fivejump + i]], axis=1)
+        for j in range(len(df3)):
+            df3.iloc[j, len(df1.columns) + i] = self_array[j]
+            df3.iloc[j, len(df1.columns) + i + 5] = partner_array[j]
+            df3.iloc[j, len(df1.columns) + i + 5] = partner_array[j]
 
 
+    for ind in df3.index:
+        temp = df3[df3.User2 == df3.loc[ind, 'User1']].iloc[:, -10:-5]
+        df3.iloc[ind, -5:] = np.asarray(temp)
 
-df3 = pd.concat([df1, df2], axis=1)
-for i in df3:
-    df3[i] = np.array(df3[i], dtype=float)
-fivejump = np.arange(0, 25, 5)
-for i in range(5):
-    self_array = np.mean(df3[df3.columns[df3.columns.str.contains('Q6_')][fivejump + i]], axis=1)
-    partner_array = np.mean(df3[df3.columns[df3.columns.str.contains('Q7_')][fivejump + i]], axis=1)
-    for j in range(len(df3)):
-        df3.iloc[j, len(df1.columns) + i] = self_array[j]
-        df3.iloc[j, len(df1.columns) + i + 5] = partner_array[j]
-        df3.iloc[j, len(df1.columns) + i + 5] = partner_array[j]
+    df3 = df3.drop(['joyous_ex_partner', 'deprivation_sens_partner', 'stress_tol_partner', 'social_cur_partner', 'thrill_seek_partner'], axis=1)
+    df3 = df3.drop(df3[(df3.User1 == 1001) | (df3.User1 == 1002)].index, axis=0)
 
+    averages = df3.mean()
+    stds = df3.std()
+    stds = stds[-10:]
+    stds = [stds[:5], stds[5:]]
 
-for ind in df3.index:
-    temp = df3[df3.User2 == df3.loc[ind, 'User1']].iloc[:, -10:-5]
-    df3.iloc[ind, -5:] = np.asarray(temp)
+    df3.to_csv('clear_data_frame.csv')
+    df1.to_csv('df1_data_frame')
+    # print (df3)
 
-df3 = df3.drop(['joyous_ex_partner', 'deprivation_sens_partner', 'stress_tol_partner', 'social_cur_partner', 'thrill_seek_partner'], axis=1)
-df3 = df3.drop(df3[(df3.User1 == 1001) | (df3.User1 == 1002)].index, axis=0)
-averages = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
-stds = pd.Series(index = df3.columns, data = np.zeros(len(df3.columns)))
+    comparison = pd.DataFrame({'self': list(averages[55:60]),
+                                   'reflection': list(averages[60:65])},
+                                  index=curious_index_names)
+    comparison1 = df3.iloc[:,55:]
 
-# for i in range(len(df3.columns)):
-#     averages[i] = np.mean(df3.iloc[:, i])
-#     stds[i] = np.std(df3.iloc[:, i])
-
-averages = df3.mean()
-stds = df3.std()
-stds = stds[-10:]
-stds = [stds[:5], stds[5:]]
-
-array_two = [0,1]
-df3.to_csv('clear_data_frame.csv')
-df1.to_csv('df1_data_frame')
-# print (df3)
-
-curious_index_names = ['joyous_ex', 'deprivation_sens', 'stress_tol', 'social_cur', 'thrill_seek']
-comparison = pd.DataFrame({'self': list(averages[55:60]),
-                               'reflection': list(averages[60:65])},
-                              index=curious_index_names)
-comparison1 = df3.iloc[:,55:]
+    return  df1, df2, df3, comparison, comparison1, averages, stds
 
 
-def graph_individual():
+def graph_individual(df3):
+    '''
 
+    :param df3:
+    :return:
+    '''
+    array_two = [0,1]
     joyous_ax = df3[df3.columns[df3.columns.str.contains('joyous_ex')][array_two]].plot.bar()
     depr_ax = df3[df3.columns[df3.columns.str.contains('deprivation_sens')][array_two]].plot.bar()
     stre_ax = df3[df3.columns[df3.columns.str.contains('stress_tol')][array_two]].plot.bar()
@@ -78,7 +79,12 @@ def graph_individual():
     socia_ax.set_title('social_cur')
     thri_ax.set_title('thrill_seek')
 
-def graph_type():
+def graph_type(comparison):
+    '''
+
+    :param comparison:
+    :return:
+    '''
     fig, ax = plt.subplots(1,1)
     comparison2 = comparison/comparison.max()
     comparison2 = pd.DataFrame(comparison2.mean(axis=1), columns = ['mean'])
@@ -86,11 +92,17 @@ def graph_type():
     comp_ax = comparison2.plot(kind = 'bar', ax =ax)
     comp_ax.set_title('all_types')
 
-def graph_all():
+def graph_all(comparison):
     all_ax = np.mean(comparison).plot.bar()
     all_ax.set_title('combined')
 
-def graph_difference():
+def graph_difference(df3, curious_index_names):
+    '''
+
+    :param df3:
+    :param curious_index_names:
+    :return:
+    '''
     for c in curious_index_names:
         temp = df3.iloc[:, df3.columns.str.contains(c)].diff(axis=1).abs().iloc[:, -1]
         df3[c + '_diff'] = temp
@@ -125,79 +137,90 @@ def graph_difference():
     print(ttest_1samp(difference_df, 0, axis=0))
 
 
+def load_json(jname, df3):
 
-#graph_individual()
-# graph_type()
-# graph_all()
-graph_difference()
+    json_df_last = pd.read_csv('/data/json_files/' + jname, index_col=0)
 
-
-json_df_last = pd.read_csv('json_df_last', index_col=0)
-
-json_df_last1 = json_df_last.copy()
-json_df_last1.user = json_df_last1.user + 1
-json_combined = pd.concat([json_df_last, json_df_last1], axis = 0)
+    json_df_last1 = json_df_last.copy()
+    json_df_last1.user = json_df_last1.user + 1
+    json_combined = pd.concat([json_df_last, json_df_last1], axis = 0)
 
 
-curious_index_names_self = []
-curious_index_names_reflection = []
-for n in curious_index_names:
-    curious_index_names_self.append(n + '_self')
-    curious_index_names_self.append(n + '_reflection')
+    curious_index_names_self = []
+    curious_index_names_reflection = []
+    for n in curious_index_names:
+        curious_index_names_self.append(n + '_self')
+        curious_index_names_self.append(n + '_reflection')
 
-possible = []
-score = []
-for i in range(7):
-    possible.append('possible_' + str(i + 1))
-    score.append('score_' + str(i + 1))
-df_columns = ['user']
-df_columns = df_columns + curious_index_names_self + curious_index_names_reflection + score + possible
+    possible = []
+    score = []
+    for i in range(7):
+        possible.append('possible_' + str(i + 1))
+        score.append('score_' + str(i + 1))
+    df_columns = ['user']
+    df_columns = df_columns + curious_index_names_self + curious_index_names_reflection + score + possible
 
-combined_df = pd.DataFrame(data = np.zeros([len(df3), 25]), columns=[df_columns])
-combined_df = combined_df.reset_index(drop=True)
-for i in range(10):
-    combined_df.iloc[:, i + 1] = list(df3.iloc[:, i - 10])
+    combined_df = pd.DataFrame(data = np.zeros([len(df3), 25]), columns=[df_columns])
+    combined_df = combined_df.reset_index(drop=True)
+    for i in range(10):
+        combined_df.iloc[:, i + 1] = list(df3.iloc[:, i - 10])
 
-for i in range(len(combined_df)):
-    combined_df.iloc[i,0] = 1003. + i
+    for i in range(len(combined_df)):
+        combined_df.iloc[i,0] = 1003. + i
 
-lvls = json_combined['level'].unique()
-usrs = json_combined['user'].unique()
-data = df3.copy()
+    lvls = json_combined['level'].unique()
+    usrs = json_combined['user'].unique()
+    data = df3.copy()
 
-for l in lvls:
-   c = 'possible_'+str(int(l))
-   data[c] = 0
-
-for u in usrs:
     for l in lvls:
-        c = 'possible_' + str(int(l))
-        data.loc[data.User1 == u, c] = np.float(json_combined.loc[((json_combined.user == u) & (json_combined.level == l)), 'possible'])
+       c = 'possible_'+str(int(l))
+       data[c] = 0
+
+    for u in usrs:
+        for l in lvls:
+            c = 'possible_' + str(int(l))
+            data.loc[data.User1 == u, c] = np.float(json_combined.loc[((json_combined.user == u) & (json_combined.level == l)), 'possible'])
 
 
-data.to_csv('df_all')
-data = data.drop((data.columns[data.columns.str.contains('Q6_')]) | (data.columns[data.columns.str.contains('Q7_')]), axis=1)
-data.to_csv('df_filtered')
+    data.to_csv('df_all')
+    data = data.drop((data.columns[data.columns.str.contains('Q6_')]) | (data.columns[data.columns.str.contains('Q7_')]), axis=1)
+    data.to_csv('df_filtered')
 
-for i in range(len(json_df_last)):
-    t = (combined_df['user'] == json_df_last['user'][i])
-    combined_df.loc[[s for s, x in enumerate(t) if x][0]:,
-    'possible_' + str(int(json_df_last['level'][i]))] = json_df_last['possible'][i]
+    for i in range(len(json_df_last)):
+        t = (combined_df['user'] == json_df_last['user'][i])
+        combined_df.loc[[s for s, x in enumerate(t) if x][0]:,
+        'possible_' + str(int(json_df_last['level'][i]))] = json_df_last['possible'][i]
 
-#        json_df_last[]
-#        elif json_df_last['level'] == 6:
-#        elif json_df_last['level'] == 5:
-#        elif json_df_last['level'] == 4:
-#        elif json_df_last['level'] == 3:
-#        elif json_df_last['level'] == 2:
-#        elif json_df_last['level'] == 1:
+    #        json_df_last[]
+    #        elif json_df_last['level'] == 6:
+    #        elif json_df_last['level'] == 5:
+    #        elif json_df_last['level'] == 4:
+    #        elif json_df_last['level'] == 3:
+    #        elif json_df_last['level'] == 2:
+    #        elif json_df_last['level'] == 1:
 
-
-plt.show()
-
+    return combined_df
 
 
+def main():
+    jname = 'json_df_last' # json data frame from all the jsons in the app.
+    fname = 'socialcuriosity_13.csv' # the data from qualtrics.
+    df = pd.read_csv(os.getcwd() + '/data/qualtrics_5dc/' + fname)
+
+    curious_index_names = ['joyous_ex', 'deprivation_sens', 'stress_tol', 'social_cur', 'thrill_seek']
+    df1, df2, df3, comparison, comparison1, averages, stds = read_raw_dat(df, curious_index_names)
+    combined_df = load_json(jname, df3)
 
 
-# from IPython import embed
-# embed()
+    # different plots
+    graph_individual(df3)
+    # graph_type(comparison)
+    # graph_all(comparison)
+    # graph_difference(df3, curious_index_names)
+
+    plt.show()
+
+if __name__ == '__main__':
+    main()
+    # from IPython import embed
+    # embed()
