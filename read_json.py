@@ -25,9 +25,9 @@ def jsonread(fname):
     data = collections.OrderedDict(sorted(data.items()))
 
     dvalues = list(data.values()) # todo: fix this
-    filtered_scores = filter(lambda x: 'user_score' in x['comment'], dvalues)
-    filtered_times  = map(lambda x: x['time'], filtered_scores)
-    filtered_scores = map(lambda x: x['comment'], filtered_scores)
+    filtered_scores = list(filter(lambda x: 'user_score' in x['comment'], dvalues))
+    filtered_times  = list(map(lambda x: x['time'], filtered_scores))
+    filtered_scores = list(map(lambda x: x['comment'], filtered_scores))
 
     for i in range(len(filtered_scores)):
         filtered_scores[i] = json.loads(filtered_scores[i].replace("'", '"'))
@@ -41,7 +41,7 @@ def jsonread(fname):
         # else:
         #     json_df.iloc[i, 4] = 0
 
-    json_df['user'] = data[data.keys()[8]]['comment']
+    json_df['user'] = data[list(data.keys())[8]]['comment']
 
     return json_df
 
@@ -58,7 +58,7 @@ def main():
 
     json_df_last = json_df_last.drop(json_df_last.index[range(7)])
     json_df_last = json_df_last.reset_index(drop = True)
-    json_df_last.to_csv('json_df_last')
+    json_df_last.to_csv('data/json_df_last')
 
     fig, ax = plt.subplots(1,1)
     sns.barplot(x='level', y='possible', hue='user', data=json_df_last)

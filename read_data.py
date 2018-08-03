@@ -62,7 +62,7 @@ def read_raw_dat(df, curious_index_names ):
 
 def graph_individual(df3):
     '''
-
+    Plotting the 5 dimension of curiosity per person.
     :param df3:
     :return:
     '''
@@ -99,6 +99,7 @@ def graph_all(comparison):
 def graph_difference(df3, curious_index_names):
     '''
 
+    Also calculating t-test between wanted levels
     :param df3:
     :param curious_index_names:
     :return:
@@ -137,9 +138,9 @@ def graph_difference(df3, curious_index_names):
     print(ttest_1samp(difference_df, 0, axis=0))
 
 
-def load_json(jname, df3):
+def load_json(jname, df3, curious_index_names):
 
-    json_df_last = pd.read_csv('/data/json_files/' + jname, index_col=0)
+    json_df_last = pd.read_csv('data/' + jname, index_col=0)
 
     json_df_last1 = json_df_last.copy()
     json_df_last1.user = json_df_last1.user + 1
@@ -209,11 +210,11 @@ def main():
 
     curious_index_names = ['joyous_ex', 'deprivation_sens', 'stress_tol', 'social_cur', 'thrill_seek']
     df1, df2, df3, comparison, comparison1, averages, stds = read_raw_dat(df, curious_index_names)
-    combined_df = load_json(jname, df3)
+    combined_df = load_json(jname, df3, curious_index_names)
 
 
     # different plots
-    graph_individual(df3)
+    graph_individual(df3) # Plotting the 5 dimension of curiosity per person.
     # graph_type(comparison)
     # graph_all(comparison)
     # graph_difference(df3, curious_index_names)
