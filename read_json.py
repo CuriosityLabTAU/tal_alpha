@@ -10,22 +10,26 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 
 
-
-def jsonread(data):
+def jsonread(fname):
+    '''
+    read json file
+    :param fname:
+    :return: dataframe from the data of the level statistics in this game
+    '''
     json_df = pd.DataFrame(np.zeros([7, 5]), columns= ['user', 'level', 'possible', 'score', 'difference'])
-    with open(data) as f:
+    with open('data/json_files/' + fname) as f:
         data = json.load(f)
     for i in data:
         data[i] = json.loads(data[i])
 
     data = collections.OrderedDict(sorted(data.items()))
 
-    dvalues = data.values()
-    filtered_scores = filter(lambda x: 'user_score' in x['comment'], dvalues)
-    filtered_times  = map(lambda x: x['time'], filtered_scores)
-    filtered_scores = map(lambda x: x['comment'], filtered_scores)
+    dvalues = list(data.values()) # todo: fix this
+    filtered_scores = list(filter(lambda x: 'user_score' in x['comment'], dvalues))
+    filtered_times  = list(map(lambda x: x['time'], filtered_scores))
+    filtered_scores = list(map(lambda x: x['comment'], filtered_scores))
 
-    for i in xrange(len(filtered_scores)):
+    for i in range(len(filtered_scores)):
         filtered_scores[i] = json.loads(filtered_scores[i].replace("'", '"'))
     for i in range(len(filtered_scores)):
         json_df.iloc[i, 1] = i + 1
@@ -37,7 +41,7 @@ def jsonread(data):
         # else:
         #     json_df.iloc[i, 4] = 0
 
-    json_df['user'] = data[data.keys()[8]]['comment']
+    json_df['user'] = data[list(data.keys())[8]]['comment']
 
     return json_df
 
@@ -54,7 +58,7 @@ def main():
 
     json_df_last = json_df_last.drop(json_df_last.index[range(7)])
     json_df_last = json_df_last.reset_index(drop = True)
-    json_df_last.to_csv('json_df_last')
+    json_df_last.to_csv('data/json_df_last')
 
     fig, ax = plt.subplots(1,1)
     sns.barplot(x='level', y='possible', hue='user', data=json_df_last)
@@ -63,7 +67,7 @@ def main():
     fig, ax = plt.subplots(1,1)
     sns.barplot(x='level', y='score', data=json_df_last)
 
-    print json_df_last
+    print(json_df_last)
     print('possible t-test:',ttest_ind(json_df_last[json_df_last['level'] == 1.]['possible'], json_df_last[json_df_last['level'] == 2.]['possible'], axis=0))
     print('score t-test:',ttest_ind(json_df_last[json_df_last['level'] == 1.]['score'], json_df_last[json_df_last['level'] == 2.]['score'], axis=0))
 
