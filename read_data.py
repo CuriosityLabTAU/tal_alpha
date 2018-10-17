@@ -129,9 +129,9 @@ def graph_difference():
 
 
 
-# graph_individual()
-# graph_type()
-# graph_all()
+graph_individual()
+graph_type()
+graph_all()
 differnce_cindex = graph_difference()
 
 

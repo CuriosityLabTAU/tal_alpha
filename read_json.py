@@ -17,7 +17,7 @@ def jsonread(fname):
     :return: dataframe from the data of the level statistics in this game
     '''
     json_df = pd.DataFrame(np.zeros([7, 5]), columns= ['user', 'level', 'possible', 'score', 'difference'])
-    with open('data/json_files/' + fname) as f:
+    with open(fname) as f:
         data = json.load(f)
     for i in data:
         data[i] = json.loads(data[i])
