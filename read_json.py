@@ -44,9 +44,9 @@ def jsonread(data):
 def main():
     for file in os.listdir(os.getcwd() + '/data/json_files'):
         if 'df_json' in locals():
-            df_json = pd.concat([df_json, jsonread(file)], axis=0)
+            df_json = pd.concat([df_json, jsonread('data/json_files/'+file)], axis=0)
         else:
-            df_json = jsonread(file)
+            df_json = jsonread('data/json_files/'+file)
     json_df_last = df_json.sort_values(by=['user'])
     json_df_last = json_df_last.reset_index(drop = True)
 

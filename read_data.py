@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_1samp
 import seaborn as sns
 import os
-
+import scipy.stats as stats
 
 fname = 'socialcuriosity_13.csv'
-df = pd.read_csv(os.getcwd() +'/data/' + fname)
+df = pd.read_csv(os.getcwd() +'/data/qualtrics_5dc/' + fname)
 df1 = df[df.columns[17:].tolist()]
 df1 = df1.drop(df.index[[0, 1]])
 df1 = df1.reset_index(drop = True)
@@ -98,9 +98,10 @@ def graph_difference():
 
     fig, ax = plt.subplots(1,1)
     differnce_cindex /= differnce_cindex.max()
+    # differnce_cindex.mean(axis=0).plot(kind= 'bar', yerr=differnce_cindex.std(axis=0), ax = ax)
     differnce_cindex.mean(axis=0).plot(kind= 'bar', yerr=differnce_cindex.std(axis=0), ax = ax)
     # differnce_cindex.boxplot()
-    print('5DC t-test')
+    print('==============5DC t-test==============')
     print(ttest_1samp(differnce_cindex, 0, axis=0))
 
     a = df3.iloc[:, df3.columns.str.contains('6_')]
@@ -121,15 +122,17 @@ def graph_difference():
     ax1.set_title('n = ' + str(difference_df.shape[0]))
     ax1.set_xlabel('Question')
     ax1.set_ylabel('Difference')
-    print('All questions t-test')
+    print('==============All questions t-test==============')
     print(ttest_1samp(difference_df, 0, axis=0))
 
+    return differnce_cindex
 
 
-#graph_individual()
+
+# graph_individual()
 # graph_type()
 # graph_all()
-graph_difference()
+differnce_cindex = graph_difference()
 
 
 json_df_last = pd.read_csv('json_df_last', index_col=0)
@@ -193,11 +196,47 @@ for i in range(len(json_df_last)):
 #        elif json_df_last['level'] == 1:
 
 
+
+
+#  add the possible score to the dataframe
+grouped = json_combined.groupby('level')
+for k, g in grouped:
+    s = str(int(k)) + '_possible'
+    s1 = str(int(k)) + '_score'
+    differnce_cindex[s] = g['possible'].tolist()
+    differnce_cindex[s1] = g['score'].tolist()
+
+def calculate_corr_with_pvalues(df, method = 'pearsonr'):
+    df = df.dropna()._get_numeric_data()
+    dfcols = pd.DataFrame(columns=df.columns)
+    pvalues = dfcols.transpose().join(dfcols, how='outer')
+    for r in df.columns:
+        for c in df.columns:
+            if method == 'pearsonr':
+                pvalues[r][c] = round(stats.pearsonr(df[r], df[c])[1], 4)
+            elif method == 'spearman':
+                pvalues[r][c] = round(stats.spearmanr(df[r], df[c])[1], 4)
+
+
+    rho = df.corr()
+    rho = rho.round(2)
+    pval = pvalues  # toto_tico's answer
+    # create three masks
+    r1 = rho.applymap(lambda x: '{}*'.format(x))
+    r2 = rho.applymap(lambda x: '{}**'.format(x))
+    r3 = rho.applymap(lambda x: '{}***'.format(x))
+    # apply them where appropriate
+    rho = rho.mask(pval <= 0.1, r1)
+    rho = rho.mask(pval <= 0.05, r2)
+    rho = rho.mask(pval <= 0.01, r3)
+
+    return pvalues, rho
+
+pv, corr_all = calculate_corr_with_pvalues(differnce_cindex)
+print(corr_all)
+
+
 plt.show()
-
-
-
-
 
 # from IPython import embed
 # embed()
