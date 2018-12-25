@@ -5,6 +5,7 @@ from scipy.stats import ttest_1samp
 import seaborn as sns
 import os
 import scipy.stats as stats
+from statsmodels.formula.api import ols
 
 fname = 'socialcuriosity_13.csv'
 df = pd.read_csv(os.getcwd() +'/data/qualtrics_5dc/' + fname)
@@ -238,9 +239,36 @@ def calculate_corr_with_pvalues(df, method = 'pearsonr'):
 pv, corr_all = calculate_corr_with_pvalues(differnce_cindex)
 print(corr_all)
 
+# Only one user per pair.
+df_all = df_all[df_all['User1']%2 == 1]
 
-df_all = pd.concat([df_all.iloc[:,-5:],differnce_cindex.iloc[:,5:]], axis = 1)
+# Only mean values of curiosity scales.
+df_all = df_all.iloc[:,-5:]
+# Group the data frame by level.
+grouped = json_df_last.groupby('level')
+for lvl, g in grouped:
+    df_all = df_all.reset_index(drop=True)
+    lvl = str(int(lvl)) # which level
+    temp = pd.DataFrame.from_dict({
+        'possible_' + lvl : g['possible'],
+        'score_' + lvl : g['score'],
+        'time_' + lvl: g['time']
+    })
+    temp = temp.reset_index(drop=True)
+    df_all = pd.concat([df_all, temp], axis=1)
 
+cnames2predict = df_all.columns[:5]
+cnames0 = df_all.columns[5:]
+cnames = str(list(cnames0)).replace(', ' , '+').replace('[','').replace(']','').replace('\'','')
+
+predictions_mlr = []
+for cp in cnames2predict:
+    formula = cp + ' ~ ' + cnames
+    temp_model = ols(formula=formula, data=df_all).fit()
+    predictions_mlr.append(temp_model)
+
+pv, corr_all = calculate_corr_with_pvalues(df_all)
+corr_all1 = corr_all.loc[cnames2predict, cnames0]
 # plt.show()
 print()
 # from IPython import embed
