@@ -91,9 +91,12 @@ def graph_all():
     all_ax.set_title('combined')
 
 def graph_difference():
+    df_all = df3.copy()
     for c in curious_index_names:
         temp = df3.iloc[:, df3.columns.str.contains(c)].diff(axis=1).abs().iloc[:, -1]
         df3[c + '_diff'] = temp
+        temp1 = df_all.iloc[:, df_all.columns.str.contains(c)].mean(axis=1)
+        df_all[c + '_mean'] = temp1
     differnce_cindex = df3.iloc[:,-5:]
 
     fig, ax = plt.subplots(1,1)
@@ -125,17 +128,17 @@ def graph_difference():
     print('==============All questions t-test==============')
     print(ttest_1samp(difference_df, 0, axis=0))
 
-    return differnce_cindex
+    return differnce_cindex, df_all
 
 
 
 graph_individual()
 graph_type()
 graph_all()
-differnce_cindex = graph_difference()
+differnce_cindex, df_all = graph_difference()
 
 
-json_df_last = pd.read_csv('json_df_last', index_col=0)
+json_df_last = pd.read_csv('data/json_df_last', index_col=0)
 
 json_df_last1 = json_df_last.copy()
 json_df_last1.user = json_df_last1.user + 1
@@ -236,7 +239,9 @@ pv, corr_all = calculate_corr_with_pvalues(differnce_cindex)
 print(corr_all)
 
 
-plt.show()
+df_all = pd.concat([df_all.iloc[:,-5:],differnce_cindex.iloc[:,5:]], axis = 1)
 
+# plt.show()
+print()
 # from IPython import embed
 # embed()
