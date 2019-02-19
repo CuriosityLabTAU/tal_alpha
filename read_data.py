@@ -261,6 +261,24 @@ cnames2predict = df_all.columns[:5]
 cnames0 = df_all.columns[5:]
 cnames = str(list(cnames0)).replace(', ' , '+').replace('[','').replace(']','').replace('\'','')
 
+def new_df_all(comparison1, df_all):
+    '''new data frame that have he mean of reflection-me and partners'''
+    df1 = comparison1.iloc[::2, :].reset_index(drop=True)
+    df2 = comparison1.iloc[1::2, :].reset_index(drop=True)
+    df3 = df1.iloc[:, :5].copy().reset_index(drop=True)
+    df4 = df1.iloc[:, :5].copy().reset_index(drop=True)
+    df5 = df1.iloc[:, :5].copy().reset_index(drop=True)
+    for i in range(5):
+        df3.iloc[:, i] = df1.iloc[:, [i, i + 5]].mean(axis=1)
+        df4.iloc[:, i] = df2.iloc[:, [i, i + 5]].mean(axis=1)
+        df5.iloc[:, i] = (df3.iloc[:, i] + df4.iloc[:, i]) / 2
+
+    temp_df = df_all.iloc[:, 5:].reset_index(drop=True)
+    df5 = pd.concat([df5, temp_df], axis=1)
+    return df5
+
+df_all = new_df_all(comparison1, df_all)
+
 predictions_mlr = []
 for cp in cnames2predict:
     formula = cp + ' ~ ' + cnames
