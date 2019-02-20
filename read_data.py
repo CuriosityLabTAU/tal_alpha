@@ -275,6 +275,7 @@ def new_df_all(comparison1, df_all):
 
     temp_df = df_all.iloc[:, 5:].reset_index(drop=True)
     df5 = pd.concat([df5, temp_df], axis=1)
+    df5.columns = df_all.columns
     return df5
 
 df_all = new_df_all(comparison1, df_all)
