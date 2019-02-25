@@ -301,6 +301,7 @@ def new_df_all(comparison1, df_all):
 
 df_all = new_df_all(comparison1, df_all)
 
+cnames = str(list(cnames0[:3])).replace(', ' , '+').replace('[','').replace(']','').replace('\'','') # only the first level parameters
 predictions_mlr = []
 for cp in cnames2predict:
     formula = cp + ' ~ ' + cnames
@@ -314,3 +315,6 @@ corr_all1.to_csv('corr_all.csv')
 print()
 # from IPython import embed
 # embed()
+
+n = 0 # 0 < n < 4
+predictions_mlr[n].summary()
