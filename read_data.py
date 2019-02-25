@@ -4,10 +4,15 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_1samp
 import seaborn as sns
 import os
+import sys
 import scipy.stats as stats
 from statsmodels.formula.api import ols
 
 fname = 'socialcuriosity_13.csv'
+# fname = 'social_curiosity_teva_school1.csv'
+
+teva_school = False
+
 df = pd.read_csv(os.getcwd() +'/data/qualtrics_5dc/' + fname)
 df1 = df[df.columns[17:].tolist()]
 df1 = df1.drop(df.index[[0, 1]])
@@ -63,6 +68,22 @@ comparison = pd.DataFrame({'self': list(averages[55:60]),
                                'reflection': list(averages[60:65])},
                               index=curious_index_names)
 comparison1 = df3.iloc[:,55:]
+comparison1 = comparison1.sort_index(axis = 1)
+
+
+if teva_school:
+    s = sns.barplot(data = comparison1)
+    s.set_xticklabels(s.get_xticklabels(), rotation=45)
+
+    fig, ax = plt.subplots(1,1, figsize = (7,5))
+    # names = ['roni','tamar','iftach','dan','liran','amit']
+    names = ['yoav', 'yana', 'yonatan', 'omer']
+    comparison1.plot.bar(ax = ax)
+    ax.set_xticklabels(names)
+    plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+
+    plt.show()
+    sys.exit()
 
 
 def graph_individual():
@@ -269,6 +290,7 @@ for cp in cnames2predict:
 
 pv, corr_all = calculate_corr_with_pvalues(df_all)
 corr_all1 = corr_all.loc[cnames2predict, cnames0]
+corr_all1.to_csv('corr_all.csv')
 # plt.show()
 print()
 # from IPython import embed
