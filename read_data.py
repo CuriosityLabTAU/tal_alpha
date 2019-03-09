@@ -301,7 +301,7 @@ def new_df_all(comparison1, df_all):
 
 df_all = new_df_all(comparison1, df_all)
 
-cnames = str(list(cnames0[:3])).replace(', ' , '+').replace('[','').replace(']','').replace('\'','') # only the first level parameters
+cnames = str(list(cnames0[3:6])).replace(', ' , '+').replace('[','').replace(']','').replace('\'','') # only the first level parameters
 predictions_mlr = []
 for cp in cnames2predict:
     formula = cp + ' ~ ' + cnames
